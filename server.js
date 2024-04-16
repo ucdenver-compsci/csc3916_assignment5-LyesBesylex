@@ -88,7 +88,7 @@ router.post('/signin', function (req, res) {
 });
 
 router.route('/movies')
-.get((req, res) => {
+.get(authJwtController.isAuthenticated, (req, res) => {
     Movie.find({}, function (err, movies) {
         if (err) {
             // Handle error if any
@@ -99,7 +99,7 @@ router.route('/movies')
         }
     });
     })
-    .post((req, res) => {
+    .post(authJwtController.isAuthenticated, (req, res) => {
         if (!req.body.title || !req.body.actors || !req.body.genre|| !req.body.releaseDate) {
             res.json({success: false, msg: 'Please include all information about movie (Title, actors, genre, releaseDate)'})
         } 
@@ -132,14 +132,14 @@ router.route('/movies')
     .delete(authController.isAuthenticated, (req, res) => {
         res.status(405).send({ message: 'HTTP method not supported.' });
     })
-    .all((req, res) => {
+    .all(authJwtController.isAuthenticated, (req, res) => {
         // Any other HTTP Method
         // Returns a message stating that the HTTP method is unsupported.
         res.status(405).send({ message: 'HTTP method not supported.' });
     });
 
 router.route('/movies/:MovieId')
-    .get((req, res) => {
+    .get(authJwtController.isAuthenticated, (req, res) => {
         const MovieId = req.params.MovieId;
         Movie.findOne({title: MovieId}, function (err, movie) {
             console.log(movie);
@@ -166,7 +166,7 @@ router.route('/movies/:MovieId')
             }
         });
         })//Working
-    .post((req, res) => {
+    .post(authJwtController.isAuthenticated, (req, res) => {
             res.status(405).send({ message: 'HTTP method not supported.' });
         }) //Working
     .put(authJwtController.isAuthenticated, (req, res) => {
@@ -184,7 +184,7 @@ router.route('/movies/:MovieId')
             });
 
         })//Working
-    .delete(authController.isAuthenticated, (req, res) => {
+    .delete(authJwtController.isAuthenticated, (req, res) => {
             const MovieId = req.params.MovieId;
 
             Movie.deleteOne({title: MovieId}, function (err, movie) {
@@ -198,14 +198,14 @@ router.route('/movies/:MovieId')
             });
 
         }) //Working
-        .all((req, res) => {
+        .all(authJwtController.isAuthenticated, (req, res) => {
             // Any other HTTP Method
             // Returns a message stating that the HTTP method is unsupported.
             res.status(405).send({ message: 'HTTP method not supported.' });
         });
     
 router.route('/reviews')
-    .get((req, res) => {
+    .get(authJwtController.isAuthenticated, (req, res) => {
         Review.find({}, function (err, reviews) {
             if (err) {
                 // Handle error if any
