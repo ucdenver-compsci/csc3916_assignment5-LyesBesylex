@@ -100,29 +100,41 @@ router.route('/movies')
     });
     })
     .post(authJwtController.isAuthenticated, (req, res) => {
-        if (!req.body.title || !req.body.actors || !req.body.genre|| !req.body.releaseDate) {
-            res.json({success: false, msg: 'Please include all information about movie (Title, actors, genre, releaseDate)'})
-        } 
-        else if (!Array.isArray(req.body.actors) || req.body.actors.length < 3) {
-            res.json({ success: false, msg: 'Please provide at least three actor for the movie.' });
-        }
-        else {
-            var movie = new Movie();
-            movie.title = req.body.title;
-            movie.actors = req.body.actors;
-            movie.genre = req.body.genre;
-            movie.releaseDate= req.body.releaseDate;
-            movie.imageUrl = req.body.imageUrl
-    
-            movie.save(function(err){
+        if (!req.body.title || !req.body.actors || !req.body.genre || !req.body.releaseDate) {
+            res.json({ success: false, msg: 'Please include all information about the movie (Title, actors, genre, releaseDate)' });
+        } else if (!Array.isArray(req.body.actors) || req.body.actors.length < 3) {
+            res.json({ success: false, msg: 'Please provide at least three actors for the movie.' });
+        } else {
+            // Check if the movie already exists
+            Movie.findOne({ title: req.body.title }, (err, existingMovie) => {
                 if (err) {
-                    if (err.code == 11000)
-                        return res.json({ success: false, message: 'That movie already exists'});
-                    else
-                        return res.json(err);
+                    return res.json(err);
                 }
+                
+                if (existingMovie) {
+                    // Movie with the same title already exists
+                    res.json({ success: false, msg: 'Movie already exists.' });
+                } else {
+                    // Create a new movie
+                    var movie = new Movie();
+                    movie.title = req.body.title;
+                    movie.actors = req.body.actors;
+                    movie.genre = req.body.genre;
+                    movie.releaseDate = req.body.releaseDate;
+                    movie.imageUrl = req.body.imageUrl;
     
-                res.json({success: true, msg: 'Successfully created new movie.'})
+                    movie.save((err) => {
+                        if (err) {
+                            if (err.code === 11000) {
+                                return res.json({ success: false, msg: 'That movie already exists' });
+                            } else {
+                                return res.json(err);
+                            }
+                        }
+    
+                        res.json({ success: true, msg: 'Successfully created a new movie.' });
+                    });
+                }
             });
         }
     })
