@@ -10,6 +10,13 @@ try {
 }
 const collectionName = 'movies'
 
+genres = [ 'Action', 'Adventure', 'Comedy', 'Drama', 'Fantasy', 'Horror', 'Mystery', 'Thriller', 'Western', 'Science Fiction' ];
+
+const ActorSchema ={
+    actorName: String,
+     characterName: String,
+};
+
 // Movie schema
 const MovieSchema = new mongoose.Schema({
     title: { type: String, required: true, index: true },
