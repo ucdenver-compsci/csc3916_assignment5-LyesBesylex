@@ -89,16 +89,47 @@ router.post('/signin', function (req, res) {
 
 router.route('/movies')
 .get(authJwtController.isAuthenticated, (req, res) => {
-    Movie.find({}, function (err, movies) {
+    const aggregate = [
+        {
+            $lookup: {
+                from: 'reviews',
+                localField: '_id',
+                foreignField: 'movieId',
+                as: 'movieReviews'
+            }
+        },
+        {
+            $addFields: {
+                avgRating: { $avg: '$movieReviews.rating' }
+            }
+        },
+        {
+            $sort: { avgRating: -1 }
+        }
+    ];
+
+    Movie.aggregate(aggregate).exec((err, movies) => {
         if (err) {
             // Handle error if any
             res.status(500).json({ success: false, message: 'Internal Server Error' });
         } else {
-            // If no error, send the retrieved movies
-            res.json(movies);
+            if (req.query.reviews == "true") {
+                // Return movies with reviews if requested
+                res.json(movies);
+            } else {
+                // Return movies without reviews
+                const moviesWithoutReviews = movies.map(movie => ({
+                    title: movie.title,
+                    releaseDate: movie.releaseDate,
+                    genre: movie.genre,
+                    actors: movie.actors,
+                    imageUrl: movie.imageUrl
+                }));
+                res.json(moviesWithoutReviews);
+            }
         }
     });
-    })
+})
     .post(authJwtController.isAuthenticated, (req, res) => {
         if (!req.body.title || !req.body.actors || !req.body.genre || !req.body.releaseDate) {
             res.json({ success: false, msg: 'Please include all information about the movie (Title, actors, genre, releaseDate)' });
