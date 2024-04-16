@@ -11,29 +11,13 @@ try {
 const collectionName = 'movies'
 
 // Movie schema
-var MovieSchema = new Schema({
-    "title": {
-        type: String,
-        required: true
-    },
-    "releaseDate": {
-        type: Number,
-        required: true
-    },
-    "genre": {
-        type: String,
-        required: true
-    },
-    "actors": {
-        type: [{
-            "actorName": String,
-            "characterName": String,
-        }], 
-        required: true
-    }
-    
-});
-
+const MovieSchema = new mongoose.Schema({
+    title: { type: String, required: true, index: true },
+    releaseDate: { type: Number, min: [1900, 'Must be greater than 1899'], max: [2100, 'Must be less than 2100']},
+    genre: { type: String, enum: genres },
+    actors: [ActorSchema],
+    imageUrl: String
+  });
 
 // return the model
 module.exports = mongoose.model('Movie', MovieSchema);
